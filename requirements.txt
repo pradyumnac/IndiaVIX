@@ -4,3 +4,5 @@ requests
 jupyterlab
 jupyter_contrib_nbextensions
 ipywidgets
+tabulate
+pandas
