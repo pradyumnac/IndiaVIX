@@ -1,4 +1,3 @@
 call wenv\scripts\activate
-echo Staring Pelican Server at localhost:8000
-pelican --listen
+pelican content -t themes\octopress
 set /p message="Press any key to exit.."
