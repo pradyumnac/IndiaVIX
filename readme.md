@@ -1,3 +1,6 @@
+---  
+permalink: /index.html  
+---  
 # IndiaVIX Downloader
 Downloads publicly available data from NSE Servers on india vix(India's MArket Volatility Idex)
 
