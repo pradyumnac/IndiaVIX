@@ -7,3 +7,6 @@ ipywidgets
 tabulate
 pandas
 pelican
+ghp-import
+markdown
+fabric
