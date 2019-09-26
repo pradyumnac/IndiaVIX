@@ -6,23 +6,16 @@
 # In[1]:
 
 
-get_ipython().system('pip install html5lib')
-get_ipython().system('pip install tabulate')
-
-
-# In[2]:
-
-
 import requests
 import pandas as pd
 from lxml import html
 from io import StringIO
 from datetime import datetime as dt, timedelta
-from IPython.display import Markdown, display
+# from IPython.display import Markdown, display
 from tabulate import tabulate
 
 
-# In[3]:
+# In[2]:
 
 
 def get_vix(oprn_dt):
@@ -60,7 +53,7 @@ def get_vix(oprn_dt):
     return df, pct_stats, close_stats
 
 
-# In[4]:
+# In[3]:
 
 
 report_md_str=''
@@ -72,33 +65,63 @@ def add_to_report(string):
 def prepare_report(df, pct_stats, close_stats):
     global report_md_str
     report_md_str = ''
+    add_to_report('## Last 5 Day volatility Details:  ')
     add_to_report('---  ')
-    add_to_report('## Today:  ')
+    add_to_report(tabulate(df.iloc[-5:].set_index('Date'), tablefmt="pipe", headers="keys")+"  \n  \n")
     add_to_report('---  ')
-    add_to_report(tabulate(df.iloc[-1:], tablefmt="pipe", headers="keys")+"  \n  \n")
-    add_to_report('---  ')
-    add_to_report('## History of "Closing Volatility":  ')
-    add_to_report('**Mean:** {0:.2f}, **Median:** {1:.2f}, **Standard Deviation:** {2:.2f}, **Quantile 10%:** {3:.2f}, **Quantile 90%:** {4:.2f}'.format(close_stats['close_mean'], close_stats['close_median'], close_stats['close_std'], close_stats['close_q10'], close_stats['close_q90']))
-    add_to_report('**Percentile Rank of "Close Vol":** {:.2f}%'.format(close_stats['close_lastpercentilescore']))
+    add_to_report('## History of Closing Volatility:  ')
+    add_to_report('**Mean:** {0:.2f},  **Median:** {1:.2f},  **Standard Deviation:** {2:.2f},  **Quantile 10%:** {3:.2f},  **Quantile 90%:** {4:.2f}  '.format(close_stats['close_mean'], close_stats['close_median'], close_stats['close_std'], close_stats['close_q10'], close_stats['close_q90']))
+    add_to_report('Percentile Rank of **Close Vol**: {:.2f}%'.format(close_stats['close_lastpercentilescore']))
     add_to_report('  \n---  ')
-    add_to_report('## History of "% Change in Volatility":  ')
-    add_to_report('**Mean:** {0:.2f}, **Median:** {1:.2f}, **Standard Deviation:** {2:.2f}, **Quantile 10%:** {3:.2f}, **Quantile 90%:** {4:.2f}'.format(pct_stats['pct_mean'], pct_stats['pct_median'], pct_stats['pct_std'], pct_stats['pct_q10'], pct_stats['pct_q90']))
-    add_to_report('**Percentile Rank of "% Change":** {:.2f}%'.format(pct_stats['pct_lastpercentilescore']))
+    add_to_report('## History of % Change in Volatility:  ')
+    add_to_report('**Mean:** {0:.2f},  **Median:** {1:.2f},  **Standard Deviation:** {2:.2f},  **Quantile 10%:** {3:.2f},  **Quantile 90%:** {4:.2f}  '.format(pct_stats['pct_mean'], pct_stats['pct_median'], pct_stats['pct_std'], pct_stats['pct_q10'], pct_stats['pct_q90']))
+    add_to_report('Percentile Rank of **% Change**: {:.2f}%'.format(pct_stats['pct_lastpercentilescore']))
     return report_md_str
+
+
+def save_report(report, date_str):
+    with open(f"reports/{date_str}.md",'w') as f:
+        f.write(report)
+
+
+# In[4]:
+
+
+def get_vix_today():
+    today = dt.now() # Not supported while market is open
+    yesterday = today+timedelta(days=-1)
+    df, pct_stats, close_stats = get_vix(yesterday)
+    report = prepare_report(df, pct_stats, close_stats)
+#     save_report(report,  yesterday.strftime("%d-%b-%Y"))
+    return df, pct_stats, close_stats, report, yesterday.strftime("%d-%b-%Y")
+
+
+# In[5]:
+
+
+df, pct_stats, close_stats, report, yesterday_str = get_vix_today()
+# display(Markdown(report))
 
 
 # In[6]:
 
 
-today = dt.now() # Not supported while market is open
-yesterday = today+timedelta(days=-1)
-df, pct_stats, close_stats = get_vix(yesterday)
-report = prepare_report(df, pct_stats, close_stats)
-display(Markdown(report))
+def create_post(report, date_str):
+    modified_on = dt.now().strftime("%Y-%m-%d %H:%M")
+    post = f'''Title: Volatility Report: {date_str}
+Date: {modified_on}
+Modified: {modified_on}
+Category: VolReport
+Tags: indiavix, {date_str}
+Slug: {date_str} Report 
+Authors: IndiaVIX AutoUpdator
+Summary: Volatility Report updates for {date_str}.
 
-
-# In[ ]:
-
-
-
+{report}'''
+    
+    with open(f"content/{date_str}.md",'w') as f:
+        f.write(post)
+        
+create_post(report, yesterday_str)
+print("Post Created")
 
