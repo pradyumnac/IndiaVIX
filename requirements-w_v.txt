@@ -79,7 +79,7 @@ tornado==6.0.3
 traitlets==4.3.2
 typogrify==2.0.7
 Unidecode==1.1.1
-urllib3==1.25.5
+urllib3==1.26.5
 wcwidth==0.1.7
 webencodings==0.5.1
 widgetsnbextension==3.5.1
